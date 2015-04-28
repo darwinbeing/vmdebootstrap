@@ -100,6 +100,11 @@ class VmDebootstrap(cliapp.Application):  # pylint: disable=too-many-public-meth
             'use MIRROR as package source (%default)',
             metavar='URL',
             default='http://http.debian.net/debian/')
+        self.settings.string_list(
+            ['components'],
+            'use COMPONENTS as components (%default)',
+            metavar='COMP',
+            default='main')
         self.settings.string(
             ['arch'],
             'architecture to use (%default)',
@@ -441,6 +446,7 @@ class VmDebootstrap(cliapp.Application):  # pylint: disable=too-many-public-meth
         if self.settings['variant']:
             args.append('--variant')
             args.append(self.settings['variant'])
+        args += ['--components=%s' % ','.join(self.settings['components'])]
         args += [self.settings['distribution'],
                  rootdir, self.settings['mirror']]
         logging.debug(" ".join(args))
@@ -785,9 +791,9 @@ append initrd=%(initrd)s root=UUID=%(uuid)s ro %(kserial)s
             self.message("Setting apt mirror to %s" % mirror)
         os.unlink(os.path.join(rootdir, 'etc', 'apt', 'sources.list'))
         f = open(conf, 'w')
-        line = 'deb %s %s main\n' % (mirror, self.settings['distribution'])
+        line = 'deb %s %s %s\n' % (mirror, self.settings['distribution'], self.settings['components'])
         f.write(line)
-        line = '#deb-src %s %s main\n' % (mirror, self.settings['distribution'])
+        line = '#deb-src %s %s main\n' % (mirror, self.settings['distribution', ' '.join(self.settings['components'])])
         f.write(line)
         f.close()
         # ensure the apt sources have valid lists
